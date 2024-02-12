@@ -1,48 +1,64 @@
 const mongoose = require("mongoose");
-const validator = require("validator")
-const userSchema = new mongoose.Schema({
-  user_name: {
-    type: String,
-    require: [true, "user name is required"],
-    min: 2,
-    max: 50,
-    trim: true,
-  },
-  email: {
-    type: String,
-    require: [true, "email is required!"],
-    min: 2,
-    max: 50,
-    trim: true,
-    unique: true,
-    validate:{
-      validator: function(email){
-        return validator.isEmail(email)
+const validator = require("validator");
+const bcrypt = require("bcrypt");
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "name is required"],
+      minLength: 2,
+      maxLength: 50,
+      trim: true,
+    },
+    user_name: {
+      type: String,
+      required: [true, "user name is required"],
+      minLength: 2,
+      maxLength: 50,
+      trim: true,
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: [true, "email is required!"],
+      minLength: 2,
+      maxLength: 50,
+      trim: true,
+      unique: true,
+      lowercase: true,
+      validate: {
+        validator: function (email) {
+          return validator.isEmail(email);
+        },
+        message: "enter a valid email!",
       },
-      message:"enter a valid email!"
-    }
+    },
+    password: {
+      type: String,
+      required: [true, "password is required!"],
+      trim: true,
+    },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    active: { type: Boolean, default: true },
+    followers: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+      default: [],
+    },
+    following: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+      default: [],
+    },
+    posts: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
+      default: [],
+    },
+    bio: { type: String, default: "" },
   },
-  password: {
-    type: String,
-    require: [true, "password is required!"],
-    min: 6,
-    max: 50,
-    trim: true,
-  },
-  avatar: {
-    type: String,
-    default: "",
-  },
-  active: { type: Boolean, default: true },
-  followers: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
-    default: [],
-  },
-  posts: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "posts" }],
-    default: [],
-  },
-  bio: { type: String, default: "" },
-},{timestamps:true});
-const User = new mongoose.model("scribbleUser", userSchema);
+  { timestamps: true }
+);
+
+const User = new mongoose.model("user", userSchema);
 module.exports = User;

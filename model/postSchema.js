@@ -9,13 +9,14 @@ const postSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "scribbleUsers",
+      ref: "user",
     },
     comments: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "scribbleComments" }],
-    },
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "comment" }],
+    }
+
   },
   { timestamps: true }
 );
-const Post = new mongoose.model("scribblePost", postSchema);
+const Post = new mongoose.model("post", postSchema);
 module.exports = Post;

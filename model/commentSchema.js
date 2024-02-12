@@ -9,11 +9,11 @@ const commentSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "scribbleUsers",
+      ref: "users",
     },
   },
   { timestamps: true }
 );
 
-const Comment = new mongoose.model("scribbleComment", postSchema);
+const Comment = new mongoose.model("comment", postSchema);
 module.exports = Comment;
