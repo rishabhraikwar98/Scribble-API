@@ -1,12 +1,21 @@
-const bcrypt = require("bcrypt");
 const User = require("../model/userSchema");
 const jwt = require("jsonwebtoken");
-
+const bcrypt = require("bcrypt");
 const userSignup = async (req, res) => {
-  const { user_name, email, password } = req.body;
+  const { name, user_name, email, password } = req.body;
   try {
-    const hashPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ user_name, email, password: hashPassword });
+    let newUser = new User({
+      name,
+      user_name,
+      email,
+      password,
+    });
+    if (password.length >= 8) {
+      const hashPassword = await bcrypt.hash(password, 12);
+      newUser.password = hashPassword;
+    } else {
+      throw new Error("password must be minimum 8 character long!");
+    }
     await newUser.save();
     let token = jwt.sign(
       {
@@ -15,19 +24,30 @@ const userSignup = async (req, res) => {
       process.env.jwt_secret,
       { expiresIn: "90d" }
     );
-    res.cookie("jwt",token,{secure:true,httpOnly:false})
+    res.cookie("jwt", token, { secure: true, httpOnly: false });
     res.status(201).json({
       status: "success",
-      message:"signup successfull!",
+      message: "signup successfull!",
       token,
     });
   } catch (error) {
     if (error.code === 11000) {
-      res
-        .status(400)
-        .json({ status: "fail", message: "Email already in use!" });
+      if (error.keyPattern.email == 1) {
+        res.status(400).json({
+          status: "fail",
+          message: `Email: ${error.keyValue.email} is already in use!`,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          message: `User Name: ${error.keyValue.user_name} is already in use!`,
+        });
+      }
     } else {
-      res.status(400).json({ status: "fail", message:error.message });
+      res.status(400).json({
+        status: "fail",
+        message: error.message,
+      });
     }
   }
 };
@@ -48,7 +68,7 @@ const userLogin = async (req, res) => {
         process.env.jwt_secret,
         { expiresIn: "90d" }
       );
-      res.cookie("jwt",token,{secure:true,httpOnly:false})
+      res.cookie("jwt", token, { secure: true, httpOnly: false });
       res.status(200).json({
         status: "success",
         token,
