@@ -1,5 +1,6 @@
 const express = require("express");
 const helmet = require("helmet");
+const cors = require("cors")
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const { rateLimit } = require("express-rate-limit");
@@ -10,6 +11,7 @@ const cookieParser = require("cookie-parser");
 const protect = require("./middleware/protect");
 const verifyUser = require("./middleware/verifyUser");
 const app = express();
+app.use(cors())
 app.use(express.json());
 // data sanitization against noSQL query injection
 app.use(mongoSanitize());
