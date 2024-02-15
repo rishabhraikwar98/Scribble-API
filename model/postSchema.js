@@ -1,20 +1,27 @@
 const mongoose = require("mongoose");
 const postSchema = new mongoose.Schema(
   {
-    post: {
+    title: {
       type: String,
       require: [true, "post is required!"],
-      min: 2,
+      minLength: 2,
       trim: true,
     },
-    user: {
+    author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
     comments: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "comment" }],
-    }
-
+      default: [],
+    },
+    liked_by: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "like" }],
+      default: [],
+    },
+  },
+  {
+    toObject:{virtuals:true}
   },
   { timestamps: true }
 );

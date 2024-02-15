@@ -4,16 +4,20 @@ const commentSchema = new mongoose.Schema(
     comment: {
       type: String,
       require: [true, "comment is required!"],
-      min: 2,
+      minLength: 2,
       trim: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: "user",
     },
+    post:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"post"
+    }
   },
   { timestamps: true }
 );
 
-const Comment = new mongoose.model("comment", postSchema);
+const Comment = new mongoose.model("comment", commentSchema);
 module.exports = Comment;

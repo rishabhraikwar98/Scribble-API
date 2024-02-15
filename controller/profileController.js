@@ -1,15 +1,8 @@
 const User = require("../model/userSchema");
-const jwt = require("jsonwebtoken");
 
-const idFromToken = (req) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const id = jwt.verify(token, process.env.jwt_secret).data;
-  return id;
-};
 const getMyProfile = async (req, res) => {
   try {
-    const id = idFromToken(req);
-    const myProfile = await User.findOne({ _id: id })
+    const myProfile = await User.findById(req.user._id)
       .select(["-__v", "-password", "-createdAt", "-updatedAt", "-active"])
       .populate({
         path: "followers",
@@ -22,6 +15,7 @@ const getMyProfile = async (req, res) => {
           "-posts",
           "-followers",
           "-following",
+          "-email",
         ],
       })
       .populate({
@@ -35,9 +29,13 @@ const getMyProfile = async (req, res) => {
           "-posts",
           "-followers",
           "-following",
+          "-email",
         ],
-      });
+      })
+      .lean();
     if (myProfile) {
+      myProfile.total_posts = myProfile.posts.length;
+      delete myProfile.posts;
       res.status(200).json({
         status: "success",
         data: myProfile,
@@ -45,7 +43,7 @@ const getMyProfile = async (req, res) => {
     } else {
       res.status(404).json({
         status: "success",
-        message: "could not find profile!",
+        message: "could not find user!",
       });
     }
   } catch (error) {
@@ -57,28 +55,18 @@ const getMyProfile = async (req, res) => {
 };
 const updateMyProfile = async (req, res) => {
   try {
-    const id = idFromToken(req);
     const { name, user_name, avatar, bio } = req.body;
-    const myProfileResult = await User.findOneAndUpdate(
-      { _id: id },
-      {
-        name,
-        user_name,
-        bio,
-        avatar,
-      }
-    );
-    if (myProfileResult) {
-      res.status(200).json({
-        status: "success",
-        message: "profile updated!",
-      });
-    } else {
-      res.status(404).json({
-        status: "success",
-        message: "could not find profile!",
-      });
-    }
+    await User.findByIdAndUpdate(req.user._id, {
+      name,
+      user_name,
+      bio,
+      avatar,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Profile updated!",
+    });
   } catch (error) {
     if (error.code === 11000 && error.keyPattern.user_name == 1) {
       res.status(400).json({
@@ -95,33 +83,24 @@ const updateMyProfile = async (req, res) => {
 };
 const deactivateMyProfile = async (req, res) => {
   try {
-    const id = idFromToken(req);
-    const myProfileResult = await User.findOneAndUpdate(
-      { _id: id },
-      { active: false }
-    );
-    if (myProfileResult) {
-      res.status(200).json({
-        status: "success",
-        message: "profile deactivated!",
-      });
-    } else {
-      res.status(404).json({
-        status: "success",
-        message: "could not find profile!",
-      });
-    }
+    await User.findByIdAndUpdate(req.user._id, {
+      active: false,
+    });
+    res.status(200).json({
+      status: "success",
+      message: "profile deactivated!",
+    });
   } catch (error) {
     res.status(400).json({
       status: "fail",
-      message: "error.message",
+      message: error.message,
     });
   }
 };
 
 const searchProfiles = async (req, res) => {
-  const { query } = req.query;
   try {
+    const { query } = req.query;
     if (query) {
       const searchCriteria = {
         $or: [
@@ -139,31 +118,34 @@ const searchProfiles = async (req, res) => {
         "-followers",
         "-following",
         "-posts",
+        "-email",
       ]);
       if (users) {
         res.status(200).json({
           status: "success",
-          results: users.length,
-          data: users,
+          data: {
+            results: users.length,
+            profiles: users,
+          },
         });
       } else {
         res.status(404).json({
-          status: "success",
-          message: "no profile found!",
+          status: "fail",
+          message: "Could not find any user!",
         });
       }
     }
   } catch (error) {
     res.status(500).json({
       status: "fail",
-      message: error.message,
+      message: "Internal server error!",
     });
   }
 };
 const viewProfile = async (req, res) => {
-  const { id } = req.params;
   try {
-    const profile = await User.findOne({ _id: id })
+    const { id } = req.params;
+    const profile = await User.findById(id)
       .select(["-password", "-__v", "-createdAt", "-updatedAt", "-active"])
       .populate({
         path: "followers",
@@ -176,6 +158,7 @@ const viewProfile = async (req, res) => {
           "-posts",
           "-followers",
           "-following",
+          "-email",
         ],
       })
       .populate({
@@ -186,59 +169,26 @@ const viewProfile = async (req, res) => {
           "-createdAt",
           "-updatedAt",
           "-active",
-          "-posts",
           "-followers",
           "-following",
+          "-posts",
+          "-email",
         ],
-      });
+      })
+      .lean();
     if (profile) {
+      profile.total_posts = profile.posts.length;
+      delete profile.posts;
       res.status(200).json({
         status: "success",
         data: profile,
       });
     } else {
       res.status(404).json({
-        status: "success",
-        message: "could not found profile!",
+        status: "fail",
+        message: "Could not find user!",
       });
     }
-  } catch (error) {
-    res.status(500).json({
-      status: "fail",
-      message: error.message,
-    });
-  }
-};
-const followAccount = async (req, res) => {
-  const userToFollowId = req.params.id;
-  const userId = idFromToken(req);
-  try {
-    const currentUser = await User.findById(userId);
-    if (!currentUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    // Find the user to follow
-    const userToFollow = await User.findById(userToFollowId);
-    if (!userToFollow) {
-      return res.status(404).json({ message: "User to follow not found" });
-    }
-
-    // Check if the current user is already following the user
-    if (currentUser.following.includes(userToFollowId)) {
-      return res
-        .status(400)
-        .json({ message: "You are already following this user" });
-    }
-
-    // Add the user to follow to the current user's following list
-    currentUser.following.push(userToFollowId);
-    userToFollow.followers.push(currentUser);
-    await currentUser.save();
-    await userToFollow.save();
-
-    return res
-      .status(200)
-      .json({ status: "success", message: "User followed successfully" });
   } catch (error) {
     res.status(500).json({
       status: "fail",
@@ -246,38 +196,88 @@ const followAccount = async (req, res) => {
     });
   }
 };
-const unfollowAccount = async (req, res) => {
-  const userToUnfollowId = req.params.id;
-  const userId = idFromToken(req);
+const followProfile = async (req, res) => {
   try {
+    const userToFollowId = req.params.id;
+    const userId = req.user._id;
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "User not found" });
+    }
+    // Find the user to follow
+    const userToFollow = await User.findById(userToFollowId);
+    if (!userToFollow) {
+      return res.status(404).json({ message: "User to follow not found!" });
+    }
+
+    // Check if the current user is already following the user
+    if (currentUser.following.includes(userToFollowId)) {
+      return res
+        .status(400)
+        .json({ message: "You are already following this user!" });
+    }
+
+    // Add the user to follow to the current user's following list
+    // currentUser.following.push(userToFollowId);
+    await User.findByIdAndUpdate(userId, {
+      following: [...currentUser.following, userToFollowId],
+    });
+    // Add current user to user to follow's followers list
+    // userToFollow.followers.push(currentUser);
+    await User.findByIdAndUpdate(userToFollowId,
+      { followers: [...userToFollow.followers, userId] }
+    );
+
+    return res
+      .status(200)
+      .json({ status: "success", message: "User followed successfully!" });
+  } catch (error) {
+    res.status(500).json({
+      status: "fail",
+      message: "Internal server error!",
+    });
+  }
+};
+const unfollowProfile = async (req, res) => {
+  try {
+    const userToUnfollowId = req.params.id;
+    const userId = req.user._id;
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found!" });
     }
 
     // Find the user to unfollow
     const userToUnfollow = await User.findById(userToUnfollowId);
     if (!userToUnfollow) {
-      return res.status(404).json({ message: "User to unfollow not found" });
+      return res.status(404).json({ message: "User to unfollow not found!" });
     }
 
     // Check if the current user is already not following the user
     if (!currentUser.following.includes(userToUnfollowId)) {
       return res
         .status(400)
-        .json({ message: "You are not following this user" }); //;
+        .json({ message: "You are not following this user!" }); //;
     }
     // Remove the user to unfollow from the current user's following list
-    currentUser.following = currentUser.following.filter((id) => {
-      return id.toString() !== userToUnfollowId;
+    // currentUser.following = currentUser.following.filter((id) => {
+    //   return id.toString() !== userToUnfollowId;
+    // });
+    await User.findByIdAndUpdate(userId, {
+      following: currentUser.following.filter((id) => {
+        return id.toString() !== userToUnfollowId;
+      }),
     });
-    await currentUser.save();
     // Remove the unfollowing user's ID from the list of followers of the user being unfollowed
-    userToUnfollow.followers = userToUnfollow.followers.filter((id) => {
-      return id.toString() !== userId;
+    // userToUnfollow.followers = userToUnfollow.followers.filter((id) => {
+    //   return id.toString() !== userId;
+    // });
+    await User.findByIdAndUpdate(userToUnfollowId, {
+      followers: userToUnfollow.followers.filter((id) => {
+        return id.toString() !== userId;
+      }),
     });
-    await userToUnfollow.save();
-    return res.status(200).json({ message: "User unfollowed successfully" });
+    return res.status(200).json({ message: "User unfollowed successfully!" });
   } catch (error) {
     res.status(500).json({
       status: "fail",
@@ -292,6 +292,6 @@ module.exports = {
   deactivateMyProfile,
   searchProfiles,
   viewProfile,
-  followAccount,
-  unfollowAccount,
+  followProfile,
+  unfollowProfile,
 };
