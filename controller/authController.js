@@ -74,7 +74,7 @@ const userLogin = async (req, res) => {
         token,
       });
     } else {
-      res.status(200).json({
+      res.status(400).json({
         status: "fail",
         message: "password did not match!",
       });
