@@ -24,12 +24,14 @@ const userSignup = async (req, res) => {
       process.env.jwt_secret,
       { expiresIn: "90d" }
     );
-    res.cookie("jwt", token, { secure: true, httpOnly: false });
-    res.status(201).json({
-      status: "success",
-      message: "signup successfull!",
-      token,
-    });
+    res
+      .cookie("access_token", token, { secure: true, httpOnly: false })
+      .status(201)
+      .json({
+        status: "success",
+        message: "Signup successfull!",
+        access_token:token,
+      });
   } catch (error) {
     if (error.code === 11000) {
       if (error.keyPattern.email == 1) {
@@ -44,9 +46,9 @@ const userSignup = async (req, res) => {
         });
       }
     } else {
-      res.status(400).json({
+      res.status(500).json({
         status: "fail",
-        message: error.message,
+        message: "Internal Server error!",
       });
     }
   }
@@ -55,9 +57,11 @@ const userSignup = async (req, res) => {
 const userLogin = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email:email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      res.status(404).json({ status: "fail", message: "could not find user!" });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Could not find user!" });
     }
     const ismatch = await bcrypt.compare(password, user.password);
     if (ismatch) {
@@ -68,19 +72,22 @@ const userLogin = async (req, res) => {
         process.env.jwt_secret,
         { expiresIn: "90d" }
       );
-      res.cookie("jwt", token, { secure: true, httpOnly: false });
-      res.status(200).json({
-        status: "success",
-        token,
-      });
+      //res.cookie("jwt", token, { secure: true, httpOnly: false });
+      res
+        .cookie("access_token", token, { secure: true, httpOnly: false })
+        .status(200)
+        .json({
+          status: "success",
+          access_token:token,
+        });
     } else {
       res.status(400).json({
         status: "fail",
-        message: "password did not match!",
+        message: "Incorrect password!",
       });
     }
   } catch (error) {
-    res.status(400).json({ status: "fail", message: error.message });
+    res.status(500).json({ status: "fail", message: "Internal server error!" });
   }
 };
 module.exports = { userSignup, userLogin };
