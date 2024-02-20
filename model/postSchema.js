@@ -7,6 +7,11 @@ const postSchema = new mongoose.Schema(
       minLength: 2,
       trim: true,
     },
+    image:{
+      type: String,
+      minLength: 2,
+      trim: true,
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
