@@ -38,7 +38,7 @@ const getMyProfile = async (req, res) => {
       delete myProfile.posts;
       res.status(200).json({
         status: "success",
-        data: myProfile,
+        myProfile,
       });
     } else {
       res.status(404).json({
@@ -181,7 +181,7 @@ const viewProfile = async (req, res) => {
       delete profile.posts;
       res.status(200).json({
         status: "success",
-        data: profile,
+        profile,
       });
     } else {
       res.status(404).json({
