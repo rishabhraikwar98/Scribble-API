@@ -3,7 +3,6 @@ const postSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      require: [true, "post is required!"],
       minLength: 2,
       trim: true,
     },
