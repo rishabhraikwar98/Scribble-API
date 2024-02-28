@@ -1,12 +1,13 @@
 const Post = require("../model/postSchema");
 const User = require("../model/userSchema");
-const Comment = require("../model/commentSchema")
-const Like = require("../model/likeSchema")
+const Comment = require("../model/commentSchema");
+const Like = require("../model/likeSchema");
 const createPost = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user._id);
-    const { title } = req.body;
+    const { title,image } = req.body;
     const newPost = new Post({
+      image,
       title,
       author: req.user._id,
     });
@@ -58,7 +59,7 @@ const editPost = async (req, res) => {
 };
 const deletePost = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { postId } = req.params;
     const currentUser = await User.findById(userId);
     const currentPost = await Post.findById(postId);
@@ -72,8 +73,8 @@ const deletePost = async (req, res) => {
     if (currentPost && currentUser.posts.includes(postId)) {
       await Post.findByIdAndDelete(postId);
       // deleting comments and likes related to post
-      await Comment.deleteMany({post:postId})
-      await Like.deleteMany({post:postId})
+      await Comment.deleteMany({ post: postId });
+      await Like.deleteMany({ post: postId });
       await User.findByIdAndUpdate(userId, {
         posts: currentUser.posts.filter((id) => id.toString() !== postId),
       });

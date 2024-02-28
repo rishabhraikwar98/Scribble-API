@@ -7,8 +7,8 @@ const postSchema = new mongoose.Schema(
       trim: true,
     },
     image:{
+      default:"",
       type: String,
-      minLength: 2,
       trim: true,
     },
     author: {
