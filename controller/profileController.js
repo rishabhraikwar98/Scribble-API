@@ -123,10 +123,8 @@ const searchProfiles = async (req, res) => {
       if (users) {
         res.status(200).json({
           status: "success",
-          data: {
-            results: users.length,
-            profiles: users,
-          },
+          results: users.length,
+          profiles: users,
         });
       } else {
         res.status(404).json({
@@ -224,9 +222,9 @@ const followProfile = async (req, res) => {
     });
     // Add current user to user to follow's followers list
     // userToFollow.followers.push(currentUser);
-    await User.findByIdAndUpdate(userToFollowId,
-      { followers: [...userToFollow.followers, userId] }
-    );
+    await User.findByIdAndUpdate(userToFollowId, {
+      followers: [...userToFollow.followers, userId],
+    });
 
     return res
       .status(200)

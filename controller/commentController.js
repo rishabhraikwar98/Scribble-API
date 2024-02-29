@@ -57,10 +57,8 @@ const viewAllComments = async (req, res) => {
     if (allComments) {
       res.status(200).json({
         status: "success",
-        data: {
-          results: allComments.length,
-          comments: allComments,
-        },
+        results: allComments.length,
+        comments: allComments,
       });
     } else {
       res.status(404).json({

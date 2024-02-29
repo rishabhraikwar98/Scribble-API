@@ -5,7 +5,7 @@ const Like = require("../model/likeSchema");
 const createPost = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user._id);
-    const { title,image } = req.body;
+    const { title, image } = req.body;
     const newPost = new Post({
       image,
       title,
@@ -170,10 +170,8 @@ const getAllPosts = async (req, res) => {
       });
       res.status(200).json({
         status: "success",
-        data: {
-          results: allPosts.length,
-          posts: response,
-        },
+        results: allPosts.length,
+        posts: response,
       });
     } else {
       res.status(404).json({
