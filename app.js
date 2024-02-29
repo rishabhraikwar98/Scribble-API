@@ -8,6 +8,7 @@ const authRouter = require("./routes/authRouter");
 const profileRouter = require("./routes/profileRouter");
 const postRouter = require("./routes/postRouter");
 const imageRouter = require("./routes/imageRouter");
+const feedRouter = require("./routes/feedRouter")
 const cookieParser = require("cookie-parser");
 const protect = require("./middleware/protect");
 const upload =require("./middleware/upload")
@@ -37,6 +38,7 @@ app.use("/api/v1/upload",upload, imageRouter);
 // protected routes
 app.use("/api/v1/profile", protect, verifyUser, profileRouter);
 app.use("/api/v1/post", protect, verifyUser, postRouter);
+app.use("/api/v1/home", protect, verifyUser, feedRouter);
 //test
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello, This is Scribble API!" });
