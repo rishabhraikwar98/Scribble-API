@@ -95,49 +95,6 @@ const deletePost = async (req, res) => {
     });
   }
 };
-const viewPost = async (req, res) => {
-  try {
-    const { postId } = req.params;
-    const post = await Post.findById(postId)
-      .select(["-__v", "-createdAt", "-updatedAt"])
-      .populate({
-        path: "author",
-        select: [
-          "-__v",
-          "-password",
-          "-createdAt",
-          "-updatedAt",
-          "-active",
-          "-posts",
-          "-followers",
-          "-following",
-          "-bio",
-          "-email",
-        ],
-      })
-      .lean();
-    if (post) {
-      post.total_likes = post.liked_by.length;
-      post.total_comments = post.comments.length;
-      delete post.comments;
-      delete post.liked_by;
-      res.status(200).json({
-        status: "success",
-        data: post,
-      });
-    } else {
-      res.status(404).json({
-        status: "fail",
-        message: "Could not find post!",
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      status: "fail",
-      message: error.message,
-    });
-  }
-};
 const getAllPosts = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -159,13 +116,15 @@ const getAllPosts = async (req, res) => {
           "-email",
         ],
       })
+      .populate({
+        path: "liked_by",
+        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
+      })
       .lean();
     if (allPosts) {
       const response = allPosts.map((post) => {
-        post.total_likes = post.liked_by.length;
         post.total_comments = post.comments.length;
         delete post.comments;
-        delete post.liked_by;
         return post;
       });
       res.status(200).json({
@@ -188,7 +147,6 @@ const getAllPosts = async (req, res) => {
 };
 module.exports = {
   createPost,
-  viewPost,
   editPost,
   deletePost,
   getAllPosts,

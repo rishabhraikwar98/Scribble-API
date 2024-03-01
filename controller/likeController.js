@@ -11,7 +11,7 @@ const likePost = async (req, res) => {
         post: postId,
       });
       await newLike.save();
-      await Post.findbyIdAndUpdate(postId, {
+      await Post.findByIdAndUpdate(postId, {
         liked_by: [...currentPost.liked_by, newLike._id],
       });
       res.status(201).json({

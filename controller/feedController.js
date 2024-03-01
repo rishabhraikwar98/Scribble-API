@@ -25,6 +25,9 @@ const getFeed = async (req, res) => {
           "-bio",
           "-email",
         ],
+      }).populate({
+        path: "liked_by",
+        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
       })
       .lean();
 
@@ -46,6 +49,9 @@ const getFeed = async (req, res) => {
           "-bio",
           "-email",
         ],
+      }).populate({
+        path: "liked_by",
+        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
       })
       .lean();
 
@@ -54,10 +60,8 @@ const getFeed = async (req, res) => {
       .sort((a, b) => b.createdAt - a.createdAt);
 
     feed = feed.map((post) => {
-      post.total_likes = post.liked_by.length;
       post.total_comments = post.comments.length;
       delete post.comments;
-      delete post.liked_by;
       return post;
     });
     // Calculate total number of posts (optional)

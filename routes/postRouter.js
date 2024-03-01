@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   createPost,
-  viewPost,
   editPost,
   deletePost,
   getAllPosts,
@@ -15,7 +14,7 @@ const {likePost,unlikePost} = require("../controller/likeController")
 const router = express.Router();
 router.route("/").post(createPost);
 router.route("/:userId/all").get(getAllPosts);
-router.route("/:postId").get(viewPost).patch(editPost).delete(deletePost);
+router.route("/:postId").patch(editPost).delete(deletePost);
 router
   .route("/:postId/comment")
   .post(createNewComment)
