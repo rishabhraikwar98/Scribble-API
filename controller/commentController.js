@@ -92,13 +92,13 @@ const deleteComment = async (req, res) => {
       });
     }
     if (
-      currentPost.author._id.toString() === userId ||
-      currentComment.user._id.toString() === userId
+      currentPost.author._id.toString() === userId.toString() ||
+      currentComment.user._id.toString() === userId.toString()
     ) {
       await Comment.findByIdAndDelete(commentId);
       await Post.findByIdAndUpdate(postId, {
         comments: currentPost.comments.filter((id) => {
-          id.toString() !== commentId;
+          id.toString() !== commentId.toString();
         }),
       });
       res.status(204).json({

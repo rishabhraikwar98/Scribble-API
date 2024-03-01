@@ -76,7 +76,7 @@ const deletePost = async (req, res) => {
       await Comment.deleteMany({ post: postId });
       await Like.deleteMany({ post: postId });
       await User.findByIdAndUpdate(userId, {
-        posts: currentUser.posts.filter((id) => id.toString() !== postId),
+        posts: currentUser.posts.filter((id) => id.toString() !== postId.toString()),
       });
       res.status(204).json({
         status: "success",
