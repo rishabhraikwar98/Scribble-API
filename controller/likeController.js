@@ -42,16 +42,15 @@ const unlikePost = async (req, res) => {
   try {
     const userId = req.user._id;
     const { postId } = req.params;
-    const currentPost = await Post.findById(postId);
+    const currentPost = await Post.findById(postId).populate("liked_by").lean();
     if (currentPost) {
-      const result = await Like.findOne({ user: userId, post: postId });
-      if (result) {
+      const resultLike = await Like.findOne({ user: userId, post: postId });
+      if (resultLike) {
         await Like.findOneAndDelete({ user: userId, post: postId });
-        await Post.findByIdAndUpdate(postId, {
-          liked_by: currentPost.liked_by.filter(
-            (id) => id.toString() !== result._id
-          ),
-        });
+        const filtered =  currentPost.liked_by.filter((item)=>{
+          return item.user.toString()!==userId.toString()
+        })
+        await Post.findByIdAndUpdate(postId,{liked_by:filtered})
         res.status(204).json({
           status: "success",
           message: "Removed Like!",
