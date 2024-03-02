@@ -26,12 +26,12 @@ app.use(helmet());
 //to handle cookies
 app.use(cookieParser());
 // rate limiting
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
-  message: "Too many requests from this IP, please try again in an hour!",
-});
-app.use("/api", limiter);
+// const limiter = rateLimit({
+//   max: 100,
+//   windowMs: 60 * 60 * 1000,
+//   message: "Too many requests from this IP, please try again in an hour!",
+// });
+// app.use("/api", limiter);
 //auth routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/upload",upload, imageRouter);
