@@ -99,7 +99,7 @@ const getAllPosts = async (req, res) => {
   try {
     const { userId } = req.params;
     let allPosts = await Post.find({ author: userId })
-      .select(["-__v", "-createdAt", "-updatedAt"])
+      .select(["-__v"])
       .sort({ createdAt: -1 })
       .populate({
         path: "author",

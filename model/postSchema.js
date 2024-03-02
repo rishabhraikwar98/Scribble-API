@@ -25,10 +25,7 @@ const postSchema = new mongoose.Schema(
       default: [],
     },
   },
-  {
-    toObject:{virtuals:true}
-  },
   { timestamps: true }
-);
+  );
 const Post = new mongoose.model("post", postSchema);
 module.exports = Post;
