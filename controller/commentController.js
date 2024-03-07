@@ -37,7 +37,7 @@ const createNewComment = async (req, res) => {
 const viewAllComments = async (req, res) => {
   try {
     const { postId } = req.params;
-    const allComments = await Comment.find({ post: postId })
+    const allComments = await Comment.find({ post: postId }).sort({ createdAt: -1 })
       .select(["-__v", "-createdAt", "-updatedAt", "-post"])
       .populate({
         path: "user",
