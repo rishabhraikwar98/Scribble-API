@@ -16,6 +16,7 @@ const getMyProfile = async (req, res) => {
           "-followers",
           "-following",
           "-email",
+          "-bio"
         ],
       })
       .populate({
@@ -30,6 +31,7 @@ const getMyProfile = async (req, res) => {
           "-followers",
           "-following",
           "-email",
+          "-bio"
         ],
       })
       .lean();
@@ -119,6 +121,7 @@ const searchProfiles = async (req, res) => {
         "-following",
         "-posts",
         "-email",
+        "-bio"
       ]);
       res.status(200).json({
         status: "success",
