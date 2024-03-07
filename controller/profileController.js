@@ -101,31 +101,29 @@ const deactivateMyProfile = async (req, res) => {
 const searchProfiles = async (req, res) => {
   try {
     const { query } = req.query;
-    if (query) {
-      const searchCriteria = {
-        $or: [
-          { user_name: { $regex: query, $options: "i" } },
-          { name: { $regex: query, $options: "i" } },
-        ],
-      };
-      // Search users based on criteria
-      const users = await User.find(searchCriteria).select([
-        "-password",
-        "-__v",
-        "-createdAt",
-        "-updatedAt",
-        "-active",
-        "-followers",
-        "-following",
-        "-posts",
-        "-email",
-      ]);
-      res.status(200).json({
-        status: "success",
-        results: users.length,
-        profiles: users,
-      });
-    }
+    const searchCriteria = {
+      $or: [
+        { user_name: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+      ],
+    };
+    // Search users based on criteria
+    const users = await User.find(searchCriteria).select([
+      "-password",
+      "-__v",
+      "-createdAt",
+      "-updatedAt",
+      "-active",
+      "-followers",
+      "-following",
+      "-posts",
+      "-email",
+    ]);
+    res.status(200).json({
+      status: "success",
+      results: users.length,
+      profiles: users,
+    });
   } catch (error) {
     res.status(500).json({
       status: "fail",
