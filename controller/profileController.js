@@ -120,18 +120,10 @@ const searchProfiles = async (req, res) => {
         "-posts",
         "-email",
       ]);
-      if (users) {
-        res.status(200).json({
-          status: "success",
-          results: users.length,
-          profiles: users,
-        });
-      } 
-    }else{
       res.status(200).json({
         status: "success",
-        results: 0,
-        profiles: [],
+        results: users.length,
+        profiles: users,
       });
     }
   } catch (error) {
@@ -212,9 +204,9 @@ const followProfile = async (req, res) => {
         .json({ message: "You are already following this user!" });
     }
     currentUser.following.push(userToFollowId);
-    userToFollow.followers.push(userId)
-    await currentUser.save()
-    await userToFollow.save()
+    userToFollow.followers.push(userId);
+    await currentUser.save();
+    await userToFollow.save();
     return res
       .status(200)
       .json({ status: "success", message: "User followed successfully!" });
@@ -241,10 +233,10 @@ const unfollowProfile = async (req, res) => {
         .status(400)
         .json({ message: "You are not following this user!" }); //;
     }
-    currentUser.following.pull(userToUnfollowId)
-    userToUnfollow.followers.pull(userId)
-    await currentUser.save()
-    await userToUnfollow.save()
+    currentUser.following.pull(userToUnfollowId);
+    userToUnfollow.followers.pull(userId);
+    await currentUser.save();
+    await userToUnfollow.save();
     return res.status(200).json({ message: "User unfollowed successfully!" });
   } catch (error) {
     res.status(500).json({
