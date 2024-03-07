@@ -126,12 +126,13 @@ const searchProfiles = async (req, res) => {
           results: users.length,
           profiles: users,
         });
-      } else {
-        res.status(404).json({
-          status: "fail",
-          message: "Could not find any user!",
-        });
-      }
+      } 
+    }else{
+      res.status(200).json({
+        status: "success",
+        results: 0,
+        profiles: [],
+      });
     }
   } catch (error) {
     res.status(500).json({
