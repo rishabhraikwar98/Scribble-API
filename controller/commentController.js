@@ -38,7 +38,7 @@ const viewAllComments = async (req, res) => {
   try {
     const { postId } = req.params;
     const allComments = await Comment.find({ post: postId }).sort({ createdAt: -1 })
-      .select(["-__v", "-updatedAt", "-post"])
+      .select(["-__v", "-updatedAt"])
       .populate({
         path: "user",
         select: [
