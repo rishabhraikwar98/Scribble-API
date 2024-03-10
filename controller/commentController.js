@@ -98,7 +98,7 @@ const deleteComment = async (req, res) => {
       await Comment.findByIdAndDelete(commentId);
       await Post.findByIdAndUpdate(postId, {
         comments: currentPost.comments.filter((id) => {
-          id.toString() !== commentId.toString();
+          return id.toString() !== commentId.toString();
         }),
       });
       res.status(204).json({
