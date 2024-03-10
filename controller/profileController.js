@@ -16,7 +16,7 @@ const getMyProfile = async (req, res) => {
           "-followers",
           "-following",
           "-email",
-          "-bio"
+          "-bio",
         ],
       })
       .populate({
@@ -31,7 +31,7 @@ const getMyProfile = async (req, res) => {
           "-followers",
           "-following",
           "-email",
-          "-bio"
+          "-bio",
         ],
       })
       .lean();
@@ -103,7 +103,7 @@ const deactivateMyProfile = async (req, res) => {
 const searchProfiles = async (req, res) => {
   try {
     const { query } = req.query;
-    if(query.trim()){
+    if (query.trim()) {
       const searchCriteria = {
         $or: [
           { user_name: { $regex: query.trim(), $options: "i" } },
@@ -121,14 +121,14 @@ const searchProfiles = async (req, res) => {
         "-following",
         "-posts",
         "-email",
-        "-bio"
+        "-bio",
       ]);
       res.status(200).json({
         status: "success",
         results: users.length,
         profiles: users,
       });
-    }else{
+    } else {
       res.status(200).json({
         status: "success",
         results: 0,
@@ -212,10 +212,14 @@ const followProfile = async (req, res) => {
         .status(400)
         .json({ message: "You are already following this user!" });
     }
-    currentUser.following.push(userToFollowId);
-    userToFollow.followers.push(userId);
-    await currentUser.save();
-    await userToFollow.save();
+    // currentUser.following.push(userToFollowId);
+    await User.findByIdAndUpdate(userId, {
+      following: [...currentUser.following, userToFollowId],
+    });
+    //userToFollow.followers.push(userId);
+    await User.findByIdAndUpdate(userToFollowId, {
+      followers: [...userToFollow.followers, userId],
+    });
     return res
       .status(200)
       .json({ status: "success", message: "User followed successfully!" });
@@ -242,10 +246,19 @@ const unfollowProfile = async (req, res) => {
         .status(400)
         .json({ message: "You are not following this user!" }); //;
     }
-    currentUser.following.pull(userToUnfollowId);
-    userToUnfollow.followers.pull(userId);
-    await currentUser.save();
-    await userToUnfollow.save();
+    //currentUser.following.pull(userToUnfollowId);
+    await User.findByIdAndUpdate(currentUser, {
+      following: currentUser.following.filter(
+        (id) => id.toString() !== userToUnfollowId
+      ),
+    });
+    //userToUnfollow.followers.pull(userId);
+    await User.findByIdAndUpdate(userToUnfollowId, {
+      followers: userToUnfollow.followers.filter(
+        (id) => id.toString() !== userId
+      ),
+    });
+
     return res.status(200).json({ message: "User unfollowed successfully!" });
   } catch (error) {
     res.status(500).json({
