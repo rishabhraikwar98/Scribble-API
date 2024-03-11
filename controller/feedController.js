@@ -5,77 +5,29 @@ const getFeed = async (req, res) => {
     const userId = req.user._id;
     const { page = 1, limit = 10 } = req.query; // Defaults: page 1, limit 10
     const currentUser = await User.findById(userId);
-    const followingPosts = await Post.find({
-      author: { $in: currentUser.following },
-    })
-      .skip((page - 1) * limit) // Skip based on page and limit
-      .limit(limit)
+    const followedUsers = currentUser.following;
+    followedUsers.push(userId); // Include user's own posts
+    const totalPosts = await Post.countDocuments({
+      author: { $in: followedUsers },
+    });
+    const totalPages = Math.ceil(totalPosts / limit);
+    const currentPage = Math.min(page, totalPages);
+    const posts = await Post.find({ author: { $in: followedUsers } })
       .select(["-__v"])
-      .populate({
-        path: "author",
-        select: [
-          "-__v",
-          "-password",
-          "-createdAt",
-          "-updatedAt",
-          "-active",
-          "-posts",
-          "-followers",
-          "-following",
-          "-bio",
-          "-email",
-        ],
-      }).populate({
-        path: "liked_by",
-        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
-      })
-      .lean();
+      .sort({ createdAt: -1 }) // Sort by latest to oldest
+      .skip((currentPage - 1) * limit) // Pagination: Skip records
+      .limit(limit) // Pagination: Limit records per page
+      .populate("author", ["name", "avatar", "user_name"])
+      .lean(); // Populate user field with name and avatar
 
-    const ownPosts = await Post.find({ author: userId })
-      .skip((page - 1) * limit) // Skip based on page and limit
-      .limit(limit)
-      .select(["-__v"])
-      .populate({
-        path: "author",
-        select: [
-          "-__v",
-          "-password",
-          "-createdAt",
-          "-updatedAt",
-          "-active",
-          "-posts",
-          "-followers",
-          "-following",
-          "-bio",
-          "-email",
-        ],
-      }).populate({
-        path: "liked_by",
-        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
-      })
-      .lean();
-
-    let feed = followingPosts
-      .concat(ownPosts)
-      .sort((a, b) => b.createdAt - a.createdAt);
-
-    feed = feed.map((post) => {
-      post.total_comments = post.comments.length;
-      delete post.comments;
-      return post;
+    const response = posts.map((p) => {
+      p.total_comments = p.comments.length;
+      delete p.comments;
+      return p;
     });
-    // Calculate total number of posts (optional)
-    const totalPostsCount = await Post.countDocuments({
-      author: { $in: currentUser.following.concat(userId) },
-    });
-
-    const totalPages = Math.ceil(totalPostsCount / limit); // Calculate total pages
-
-    res.json({
-      feed,
-      currentPage: page,
-      totalPages,
-    });
+    res
+      .status(200)
+      .json({ status: "success", feed: response, totalPages, currentPage });
   } catch (error) {
     res.status(500).json({ status: "fail", message: "Internal server error" });
   }
