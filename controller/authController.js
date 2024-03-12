@@ -10,11 +10,14 @@ const userSignup = async (req, res) => {
       email,
       password,
     });
-    if (password.length >= 8) {
+    if (password.trim().length >= 8) {
       const hashPassword = await bcrypt.hash(password, 12);
       newUser.password = hashPassword;
     } else {
-      throw new Error("password must be minimum 8 character long!");
+      return res.status(400).json({
+        status: "fail",
+        message: "password must be minimum 8 character long!",
+      });
     }
     await newUser.save();
     let token = jwt.sign(
@@ -30,17 +33,17 @@ const userSignup = async (req, res) => {
       .json({
         status: "success",
         message: "Signup successfull!",
-        access_token:token,
+        access_token: token,
       });
   } catch (error) {
     if (error.code === 11000) {
       if (error.keyPattern.email == 1) {
-        res.status(400).json({
+        return res.status(400).json({
           status: "fail",
           message: `Email: ${error.keyValue.email} is already in use!`,
         });
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           status: "fail",
           message: `User Name: ${error.keyValue.user_name} is already in use!`,
         });
@@ -78,10 +81,10 @@ const userLogin = async (req, res) => {
         .status(200)
         .json({
           status: "success",
-          access_token:token,
+          access_token: token,
         });
     } else {
-      res.status(400).json({
+      return res.status(400).json({
         status: "fail",
         message: "Incorrect password!",
       });
@@ -90,4 +93,31 @@ const userLogin = async (req, res) => {
     res.status(500).json({ status: "fail", message: "Internal server error!" });
   }
 };
-module.exports = { userSignup, userLogin };
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user._id;
+  try {
+    const currentUser = await User.findById(userId);
+    if (!(await bcrypt.compare(currentPassword, currentUser.password))) {
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Current password is incorrect." });
+    }
+    if (newPassword.trim().length >= 8) {
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+      await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
+    } else {
+      return res.status(400).json({
+        status: "fail",
+        message: "New password must be minimum 8 character long!",
+      });
+    }
+
+    res
+      .status(200)
+      .json({ status: "success", message: "Password changed successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+module.exports = { userSignup, userLogin, changePassword };
