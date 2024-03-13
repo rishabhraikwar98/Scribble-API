@@ -57,28 +57,35 @@ const getMyProfile = async (req, res) => {
 };
 const updateMyProfile = async (req, res) => {
   try {
-    const { name, user_name, avatar, bio } = req.body;
-    await User.findByIdAndUpdate(req.user._id, {
+    const { name, user_name, email, avatar, bio } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, {
       name,
       user_name,
       bio,
+      email,
       avatar,
     });
-
     res.status(200).json({
       status: "success",
       message: "Profile updated!",
     });
   } catch (error) {
-    if (error.code === 11000 && error.keyPattern.user_name == 1) {
-      res.status(400).json({
-        status: "fail",
-        message: `User Name: ${error.keyValue.user_name} is already in use!`,
-      });
+    if (error.code === 11000) {
+      if (error.keyPattern.email == 1) {
+        return res.status(400).json({
+          status: "fail",
+          message: `Email: ${error.keyValue.email} is already in use!`,
+        });
+      } else {
+        return res.status(400).json({
+          status: "fail",
+          message: `User Name: ${error.keyValue.user_name} is already in use!`,
+        });
+      }
     } else {
-      res.status(400).json({
+      res.status(500).json({
         status: "fail",
-        message: error.message,
+        message: "Internal Server error!",
       });
     }
   }
@@ -210,12 +217,10 @@ const followProfile = async (req, res) => {
     }
     // Check if the current user is already following the user
     if (currentUser.following.includes(userToFollowId.toString())) {
-      return res
-        .status(400)
-        .json({
-          status: "fail",
-          message: "You are already following this user!",
-        });
+      return res.status(400).json({
+        status: "fail",
+        message: "You are already following this user!",
+      });
     }
     currentUser.following.push(userToFollowId);
     userToFollow.followers.push(userId);
