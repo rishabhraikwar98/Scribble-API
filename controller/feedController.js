@@ -22,7 +22,10 @@ const getFeed = async (req, res) => {
     
     // Fetch posts from followed users, sorted by latest to oldest
     const posts = await Post.find({ author: { $in: followedUsers } })
-      .select(["-__v"])
+      .select(["-__v"]).populate({
+        path: "liked_by",
+        select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
+      })
       .sort({ createdAt: -1 }) // Sort by latest to oldest
       .skip((currentPage - 1) * limit) // Pagination: Skip records
       .limit(limit) // Pagination: Limit records per page
