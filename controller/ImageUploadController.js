@@ -12,7 +12,7 @@ cloudinary.config({
 const uploadImageToCloudinary = async (filePath) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
-      transformation: [{ width: 800, height: 800, crop: "limit" }],
+      transformation: [{ width: 800, height: 800, crop: "pad" }],
     });
     return result.secure_url;
   } catch (error) {
