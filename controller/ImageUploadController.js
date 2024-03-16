@@ -9,10 +9,10 @@ cloudinary.config({
 });
 
 // Function to upload file to Cloudinary
-const uploadImageToCloudinary = async (filePath) => {
+const uploadImageToCloudinary = async (filePath,crop) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
-      transformation: [{ width: 800, height: 800, crop: "pad" }],
+      transformation: [{ width: 800, height: 800, crop:crop}],
     });
     return result.secure_url;
   } catch (error) {
@@ -23,22 +23,19 @@ const uploadImageToCloudinary = async (filePath) => {
 
 // File upload controller
 const uploadImage = async (req, res) => {
-  // Access the temporary file path from req.file
+  const { crop } = req.query; // pad || fill
+  //Access the temporary file path from req.file
   const tempFilePath = req.file.path;
-
   if (!tempFilePath) {
     return res
       .status(400)
       .json({ status: "fail", message: "No file uploaded!" });
   }
-
   try {
     // Upload temporary file to Cloudinary
-    const imageUrl = await uploadImageToCloudinary(tempFilePath);
-
+    const imageUrl = await uploadImageToCloudinary(tempFilePath,crop);
     // File uploaded successfully to Cloudinary, return the Cloudinary URL
     res.json({ status: "success", image_url: imageUrl });
-
     // Delete temporary file after upload
     await fs.unlink(tempFilePath);
   } catch (error) {
