@@ -27,8 +27,8 @@ const getFeed = async (req, res) => {
         select: ["-__v", "-post", "-createdAt", "-updatedAt","-_id"],
       })
       .sort({ createdAt: -1 }) // Sort by latest to oldest
-      .skip((currentPage - 1) * limit) // Pagination: Skip records
-      .limit(limit) // Pagination: Limit records per page
+      // .skip((currentPage - 1) * limit) // Pagination: Skip records
+      // .limit(limit) // Pagination: Limit records per page
       .populate("author", ["name", "avatar", "user_name"])
       .lean(); // Populate user field with name and avatar
 
