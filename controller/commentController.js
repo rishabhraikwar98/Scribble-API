@@ -17,12 +17,12 @@ const createNewComment = async (req, res) => {
       await Post.findByIdAndUpdate(postId, {
         comments: [...currentPost.comments, newComment._id],
       });
-      res.status(201).json({
+      return res.status(201).json({
         status: "success",
         message: "Added new comment!",
       });
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         status: "fail",
         message: "Could not find post!",
       });
@@ -55,13 +55,13 @@ const viewAllComments = async (req, res) => {
         ],
       });
     if (allComments) {
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         results: allComments.length,
         comments: allComments,
       });
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         status: "fail",
         message: "Could not find comments!",
       });
@@ -80,13 +80,13 @@ const deleteComment = async (req, res) => {
     const currentPost = await Post.findById(postId);
     const currentComment = await Comment.findById(commentId);
     if (!currentPost) {
-      res.status(404).json({
+      return res.status(404).json({
         status: "fail",
         message: "Could not find post!",
       });
     }
     if (!currentComment) {
-      res.status(404).json({
+      return res.status(404).json({
         status: "fail",
         message: "Could not find comment!",
       });
@@ -101,12 +101,12 @@ const deleteComment = async (req, res) => {
           return id.toString() !== commentId.toString();
         }),
       });
-      res.status(204).json({
+      return res.status(204).json({
         status: "success",
         message: "Comment deleted!",
       });
     } else {
-      res.status(403).json({
+      return res.status(403).json({
         status: "fail",
         message: "Can not delete other's comment from others's post!",
       });
