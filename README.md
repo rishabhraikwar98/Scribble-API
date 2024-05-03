@@ -1,7 +1,7 @@
 
 # Scribble API
 
-Backend for Scribble Social media app
+Backend for Scribble Micro-Bloggoing App
 
 ## Environment Variables
 
