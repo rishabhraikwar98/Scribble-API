@@ -7,6 +7,8 @@ Backend for Scribble Micro-Bloggoing App
 
 To run this project, you will need to add the following environment variables to your .env file
 
+`BASE_URL` (Frontend)
+
 `MONGO_STRING`
 
 `JWT_SECRET`
