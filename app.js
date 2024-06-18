@@ -8,13 +8,13 @@ const authRouter = require("./routes/authRouter");
 const profileRouter = require("./routes/profileRouter");
 const postRouter = require("./routes/postRouter");
 const imageRouter = require("./routes/imageRouter");
-const feedRouter = require("./routes/feedRouter")
+const feedRouter = require("./routes/feedRouter");
 const cookieParser = require("cookie-parser");
 const protect = require("./middleware/protect");
-const upload =require("./middleware/upload")
+const upload = require("./middleware/upload");
 const verifyUser = require("./middleware/verifyUser");
 const app = express();
-app.use(cors());
+app.use(cors({ origin: process.env.BASE_URL }));
 app.use(express.json());
 // data sanitization against noSQL query injection
 app.use(mongoSanitize());
@@ -34,7 +34,7 @@ app.use(cookieParser());
 // app.use("/api", limiter);
 //auth routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/upload",upload, imageRouter);
+app.use("/api/v1/upload", upload, imageRouter);
 // protected routes
 app.use("/api/v1/profile", protect, verifyUser, profileRouter);
 app.use("/api/v1/post", protect, verifyUser, postRouter);

@@ -7,9 +7,9 @@ Backend for Scribble Micro-Bloggoing App
 
 To run this project, you will need to add the following environment variables to your .env file
 
-`Mongo_String`
+`MONGO_STRING`
 
-`jwt_secret`
+`JWT_SECRET`
 
 `CLOUDINARY_CLOUD_NAME`
 

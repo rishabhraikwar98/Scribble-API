@@ -4,7 +4,7 @@ const protect = (req, res, next) => {
     let authorized;
     if (req.headers.authorization) {
       const token = req.headers.authorization.split(" ")[1];
-      authorized = jwt.verify(token, process.env.jwt_secret);
+      authorized = jwt.verify(token, process.env.JWT_SECRET);
       if (authorized) {
           next();
       }

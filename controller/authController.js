@@ -24,7 +24,7 @@ const userSignup = async (req, res) => {
       {
         data: newUser._id,
       },
-      process.env.jwt_secret,
+      process.env.JWT_SECRET,
       { expiresIn: "90d" }
     );
     res
@@ -72,7 +72,7 @@ const userLogin = async (req, res) => {
         {
           data: user._id,
         },
-        process.env.jwt_secret,
+        process.env.JWT_SECRET,
         { expiresIn: "90d" }
       );
       //res.cookie("jwt", token, { secure: true, httpOnly: false });
